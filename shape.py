@@ -53,6 +53,13 @@ class Triangle(SceneObject):
 class Group(SceneObject):
   def __init__(self, objects):
     self.objects = objects
+  def intersect(self, ray, tmin):
+    hits = (obj.intersect(ray, tmin) for obj in self.objects)
+    hits = (hit for hit in hits if hit != None)
+    try:
+      return min(hits, key=lambda h: h[0])
+    except ValueError: # no hits
+      return None
 
 class Transformation(SceneObject):
   def __init__(self, matrix, obj):
