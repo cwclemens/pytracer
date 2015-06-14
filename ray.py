@@ -1,3 +1,4 @@
+"""Simple ray class"""
 from vecmath import *
 
 class Ray:

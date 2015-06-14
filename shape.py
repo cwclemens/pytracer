@@ -1,21 +1,31 @@
+"""Object primitives and data structures to describe a scene"""
 from vecmath import *
 
 class SceneObject:
+  """Abstract base class"""
+
   def intersect(self, ray, tmin):
+    """All scene objects must compute ray intersection, returning 
+    (distance_along_ray, material_at_intersection, surface_normal)
+    """
     raise NotImplementedError
 
+
 class Sphere(SceneObject):
+  """Simple sphere representation"""
+
   def __init__(self, radius, center, material):
     self.radius = radius
     self.center = center
     self.material = material
+
   def intersect(self, ray, tmin):
     Ro = ray.origin - self.center
     Rd = ray.direction
-    a = norm(Rd)**2
+    a = norm(Rd)**2 # a,b,c are the coefficients of a quadratic
     b = 2*dot(Rd,Ro)
     c = norm(Ro)**2 - self.radius**2
-    d = b**2 - 4*a*c
+    d = b**2 - 4*a*c # determinant
     if d <= 0:
       return None
     d = d**0.5
@@ -27,10 +37,13 @@ class Sphere(SceneObject):
 
 
 class Plane(SceneObject):
+  """Point-normal representation of an infinite plane"""
+
   def __init__(self, normal, origin, material):
     self.normal = normalized(normal)
     self.origin = origin
     self.material = material
+
   def intersect(self, ray, tmin):
     det = dot(ray.direction, self.normal)
     if abs(det) < epsilon:
@@ -40,19 +53,25 @@ class Plane(SceneObject):
     if t > tmin:
       return (t, self.material, self.normal if dist > 0 else -self.normal)
 
-class Triangle(SceneObject):
+class Triangle(SceneObject): #TODO: implement triangle intersection with barycentrics
+  """A triangle represented by its vertices, and optionally, its vertex normals"""
+
   def __init__(self, a, b, c, material):
     self.a, self.b, self.c = a, b, c
     self.na = self.nb = self.nc = normalized(cross(b-a, c-a))
     self.material = material
+
   def __init__(self, a, b, c, na, nb, nc, material):
     self.a, self.b, self.c = a, b, c
     self.na, self.nb, self.nc = normalized(na), normalized(nb), normalized(nc)
     self.material = material
 
 class Group(SceneObject):
+  """Represent a collection of SceneObjects -- makes SceneObject into a tree"""
+
   def __init__(self, objects):
     self.objects = objects
+
   def intersect(self, ray, tmin):
     hits = (obj.intersect(ray, tmin) for obj in self.objects)
     hits = (hit for hit in hits if hit != None)
@@ -61,7 +80,9 @@ class Group(SceneObject):
     except ValueError: # no hits
       return None
 
-class Transformation(SceneObject):
+class Transformation(SceneObject): # TODO: transformation intersection code
+  """Represent an affine transformation of scene objects"""
+
   def __init__(self, matrix, obj):
     self.object = obj
     self.M = matrix
