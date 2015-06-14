@@ -1,12 +1,14 @@
 from shape import *
 from material import *
+from light import *
 from camera import *
 from ray import *
 from vecmath import *
 import Image
 
-scene = Sphere(5.0, vector(0,0,0), ConstantShader(vector(0,0,1)))
+scene = Sphere(5.0, vector(0,0,0), PhongDiffuse(vector(0,0,1)))
 camera = PerspectiveCamera(vector(0,0,10), vector(0,0,-1), vector(0,1,0))
+light = PointLight(vector(0.9, 0.9, 0.9), vector(10, 0, 10))
 
 def main():
   array = np.zeros((200, 200, 3))
@@ -18,7 +20,7 @@ def main():
         array[j][i] = vector(0,0,0)
       else:
         t, material, normal = hit
-        array[j][i] = material.shade(t, ray, None)
+        array[j][i] = material.shade(t, ray, normal, light)
   write_image(array)
 
 def get_arguments():
