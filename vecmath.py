@@ -4,7 +4,9 @@ import math
 epsilon = 1e-7
 pi = math.pi
 
-vector = np.array
+def vector(*comps):
+  return np.array(comps)
+
 norm = np.linalg.norm
 dot = np.dot
 cross = np.cross
@@ -14,9 +16,12 @@ getY = lambda self: self[1]
 getZ = lambda self: self[2]
 
 def normalized(vec):
-  s = vec.sum()
-  if s > epsilon:
-    return vec / s
+  return vec/norm(vec)
+
+
+def quantize(x):
+  return math.floor(x*255)
+quantize = np.vectorize(quantize)
 
 def transformPoint(matrix, point):
   return (matrix*np.matrix(np.append(point, 1)).T).A.flatten()[:2]

@@ -31,6 +31,14 @@ class Plane(SceneObject):
     self.normal = normalized(normal)
     self.origin = origin
     self.material = material
+  def intersect(self, ray, tmin):
+    det = dot(ray.direction, self.normal)
+    if abs(det) < epsilon:
+      return None # ray is parallel to plane
+    dist = dot(ray.origin - self.origin, self.normal)
+    t = -dist / det
+    if t > tmin:
+      return (t, self.material, self.normal if dist > 0 else -self.normal)
 
 class Triangle(SceneObject):
   def __init__(self, a, b, c, material):

@@ -14,8 +14,8 @@ class PerspectiveCamera(Camera):
         self.right = cross(self.forward, self.up)
         self.field_of_view = pi*angle/180.0
         self.aspect = aspect
-        d = 1.0 / math.tan(field_of_view/2.0) # distance to image plane
+        d = 1.0 / math.tan(self.field_of_view/2.0) # distance to image plane
         self.center = d*self.forward # relative location of center of image plane
     def generateRay(self, point):
-        return Ray(self.location, normalized(self.center + self.right*getX(point) + self.up*aspect*getY(point)))
+        return Ray(self.location, normalized(self.center + self.right*getX(point) + self.up*self.aspect*getY(point)))
 
