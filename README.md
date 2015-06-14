@@ -1,4 +1,4 @@
-# pytrace
+# pytracer
 
 A simple ray tracer written in Python using NumPy and PIL
 
