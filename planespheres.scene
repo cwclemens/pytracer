@@ -1,0 +1,69 @@
+
+Settings {
+    background_color 0 0 0 
+    ambient_light 0.1 0.1 0.1 
+}
+
+PerspectiveCamera {
+    location 0 0 10 
+    forward 0 0 -1
+    up 0 1 0
+    angle 30
+}
+
+Lights {
+    PointLight {
+        location 0.0 5 5
+        intensity 1
+        color 0.9 0.9 0.9 
+    }
+}
+
+Materials {
+    PhongDiffuse {
+      diffuse_color 1 0 0 
+    }
+    PhongDiffuse {
+      diffuse_color 0 1 0 
+    }
+    PhongDiffuse {
+      diffuse_color 0 0 1 
+    }
+    PhongDiffuse {
+      diffuse_color 1 1 1 
+    }
+}
+
+Scene {
+    Sphere {
+	center 0 0 0 
+        radius 1 
+        material_idx 0
+    }
+    Sphere {
+	center 1 1 1 
+        radius 0.75
+        material_idx 1
+    }
+    Sphere {
+	center -1 -1 1 
+        radius 0.75
+        material_idx 1
+    }
+    Sphere {
+	center -1 1 -1 
+        radius 0.75
+        material_idx 2
+    }
+    Sphere {
+	center 1 -1 -1 
+        radius 0.75 
+        material_idx 2
+    }
+    Plane {
+	normal 0 1 0
+        origin 0 -2 0
+        material_idx 3
+    }
+}
+

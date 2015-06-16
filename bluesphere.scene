@@ -1,0 +1,35 @@
+Settings {
+  background_color 0 0 0
+  ambient_light 0.1 0.1 0.1
+}
+PerspectiveCamera {
+  location 0 0 10
+  forward 0 0 -1
+  up 0 1 0
+}
+Lights {
+  PointLight {
+    location -10 10 15
+    color 0.9 0.9 0.9
+  }
+}
+Materials {
+  PhongDiffuse {
+    diffuse_color 0 0 1
+  }
+  PhongDiffuse {
+    diffuse_color 1 1 1
+  }
+}
+Scene {
+  Sphere {
+    radius 5
+    center 0 0 0
+    material_idx 0
+  }
+  Plane {
+    normal 0 1 0
+    origin 0 -10 0
+    material_idx 1
+  }
+}
