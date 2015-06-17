@@ -1,42 +1,90 @@
-"""A rough and simple parser to read scene description files"""
+"""A parser to read scene description files"""
 __all__ = ['Configuration', 'parseFile']
+import inspect
+import sceneobject
+import camera
+import light
+import material
 from vecmath import *
-from sceneobject import *
-from camera import *
-from light import *
-from material import *
 
 class Configuration:
   def __init__(self):
     self.background_color = vector(0,0,0)
     self.ambient_light = vector(0.1,0.1,0.1)
-  def isValid(self):
-    try:
-      return all([self.camera != None,
-                  self.lights != None,
-                  self.scene != None,
-                  self.background_color != None,
-                  self.ambient_light != None])
-    except NameError:
-      return False
 
 def parseFile(infile):
   config = Configuration()
   tokens = getTokens(infile)
   for token in tokens:
-    if token == 'PerspectiveCamera':
-      config.camera = parsePerspectiveCamera(getBlock(tokens))
+    if token == 'Settings':
+      settings = parseClassArgs(zip(*inspect.getmembers(config))[0], getBlock(tokens))
+      for k,v in settings.iteritems():
+        setattr(config, k, v)
+    elif token == 'Camera':
+      config.camera = parseModule(camera, concatGenerators([next(tokens)], '{', getBlock(tokens), '}'))[0]
     elif token == 'Lights':
-      config.lights = parseLights(getBlock(tokens))
+      config.lights = parseModule(light, getBlock(tokens))
     elif token == 'Materials':
-      config.materials = parseMaterials(getBlock(tokens))
+      config.materials = parseModule(material, getBlock(tokens), True)
     elif token == 'Scene':
-      config.scene = parseScene(config.materials, getBlock(tokens))
-    elif token == 'Settings':
-      parseSettings(config, getBlock(tokens))
+      config.scene = sceneobject.Group(parseModule(sceneobject, getBlock(tokens), False, ['Group']))
+      setMaterials(config.scene, config.materials)
     else:
       raise ValueError('Top-level command '+token+' not recognized')
   return config
+
+def setMaterials(scene, materials):
+  for obj in scene.objects:
+    if hasattr(obj, 'material'):
+      obj.material = materials[obj.material]
+    elif hasattr(obj, 'objects'):
+      setMaterials(obj, materials)
+
+def parseModule(module, tokens, named=False, recursiveTypes=[]):
+  instances = {} if named else []
+  classes = {name:obj for name,obj in inspect.getmembers(module, inspect.isclass)}
+  for token in tokens:
+    if token in recursiveTypes:
+      classobj = classes[token]
+      instances.append(classobj(parseModule(module, getBlock(tokens), False, recursiveTypes)))
+    elif token in classes:
+      if named:
+        instanceName = next(tokens)
+      classobj = classes[token]
+      argnames = inspect.getargspec(classobj.__init__)[0]
+      args = parseClassArgs(argnames, getBlock(tokens))
+      if named:
+        instances[instanceName] = classobj(**args)
+      else:
+        instances.append(classobj(**args))
+  return instances
+      
+def parseClassArgs(argnames, tokens):
+  d = {}
+  for token in tokens:
+    if token in argnames:
+      arg = token
+      d[arg] = []
+    else:
+      d[arg].append(token)
+  return parseArgDict(d)
+
+def parseArgDict(d):
+  for key in d:
+    values = d[key]
+    try:
+      if len(values) == 1:
+        d[key] = float(values[0])
+      elif len(values) >= 3:
+        d[key] = vector(*[float(v) for v in values])
+    except ValueError:
+      d[key] = values[0] # Just leave it as a string
+  return d
+
+def concatGenerators(*gens):
+  for gen in gens:
+    for x in gen:
+      yield x
 
 def getTokens(infile):
   with open(infile, 'r') as file:
@@ -64,118 +112,3 @@ def getBlock(tokens):
       raise ValueError('Expected block, no opening bracket found')
   except StopIteration:
     raise ValueError('Ran out of tokens before completing block')
-
-def parseVector(tokens):
-  x = parseFloat(tokens)
-  y = parseFloat(tokens)
-  z = parseFloat(tokens)
-  return vector(x,y,z)
-
-def parseFloat(tokens):
-  try:
-    return float(next(tokens))
-  except ValueError:
-    raise ValueError('Expected float, could not parse')
-
-def parseInt(tokens):
-  try:
-    return int(next(tokens))
-  except ValueError:
-    raise ValueError('Expected int, could not parse')
-
-def parsePerspectiveCamera(tokens):
-  angle = 90.0
-  aspect = 1.0
-  for token in tokens:
-    if token == 'location':
-      location = parseVector(tokens)
-    elif token == 'forward':
-      forward = parseVector(tokens)
-    elif token == 'up':
-      up = parseVector(tokens)
-    elif token == 'angle':
-      angle = parseFloat(tokens)
-    elif token == 'aspect':
-      aspect = parseFloat(tokens)
-  try:
-    return PerspectiveCamera(location, forward, up, angle, aspect)
-  except NameError:
-    raise ValueError('Failed to parse PerspectiveCamera')
-
-def parseLights(tokens):
-  lights = []
-  try:
-    for token in tokens:
-      if token == 'PointLight':
-        color = vector(1,1,1)
-        toks = getBlock(tokens)
-        for tok in toks:
-          if tok == 'location':
-            location = parseVector(toks)
-          elif tok == 'color':
-            color = parseVector(toks)
-        lights.append(PointLight(location, color))
-  except NameError:
-    raise ValueError('Failed to parse light')
-  return lights
-
-def parseMaterials(tokens):
-  materials = []
-  try:
-    for token in tokens:
-      if token == 'ConstantShader':
-        toks = getBlock(tokens)
-        for tok in toks:
-          if tok == 'color':
-            color = parseVector(toks)
-        materials.append(ConstantShader(color))
-      elif token == 'PhongDiffuse':
-        toks = getBlock(tokens)
-        for tok in toks:
-          if tok == 'diffuse_color':
-            color = parseVector(toks)
-        materials.append(PhongDiffuse(color))
-  except NameError:
-    raise ValueError('Failed to parse material')
-  return materials
-    
-def parseScene(materials, tokens):
-  objects = []
-  for token in tokens:
-    if token == 'Sphere':
-      toks = getBlock(tokens)
-      for tok in toks:
-        if tok == 'center':
-          center = parseVector(toks)
-        elif tok == 'radius':
-          radius = parseFloat(toks)
-        elif tok == 'material_idx':
-          material = materials[parseInt(toks)]
-      objects.append(Sphere(radius, center, material))
-    elif token == 'Plane':
-      toks = getBlock(tokens)
-      for tok in toks:
-        if tok == 'origin':
-          origin = parseVector(toks)
-        elif tok == 'normal':
-          normal = parseVector(toks)
-        elif tok == 'material_idx':
-          material = materials[parseInt(toks)]
-      objects.append(Plane(normal, origin, material))
-    elif token == 'Triangle':
-      toks = getBlock(tokens)
-    elif token == 'Group':
-      objects.append(parseScene(getBlock(tokens)))
-    elif token == 'Transform':
-      toks = getBlock(tokens)
-  return Group(objects)
-
-def parseSettings(config, tokens):
-  backgroud_color = vector(0,0,0)
-  ambient_light = vector(0.1,0.1,0.1)
-  for token in tokens:
-    if token == 'background_color':
-      config.background_color = parseVector(tokens)
-    elif token == 'ambient_light':
-      config.ambient_light = parseVector(tokens)
-

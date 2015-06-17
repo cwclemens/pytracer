@@ -4,7 +4,7 @@ Settings {
     ambient_light 0.1 0.1 0.1 
 }
 
-PerspectiveCamera {
+Camera PerspectiveCamera {
     location 0 0 10 
     forward 0 0 -1
     up 0 1 0
@@ -14,22 +14,21 @@ PerspectiveCamera {
 Lights {
     PointLight {
         location 0.0 5 5
-        intensity 1
         color 0.9 0.9 0.9 
     }
 }
 
 Materials {
-    PhongDiffuse {
+    PhongDiffuse red {
       diffuse_color 1 0 0 
     }
-    PhongDiffuse {
+    PhongDiffuse green {
       diffuse_color 0 1 0 
     }
-    PhongDiffuse {
+    PhongDiffuse blue {
       diffuse_color 0 0 1 
     }
-    PhongDiffuse {
+    PhongDiffuse white {
       diffuse_color 1 1 1 
     }
 }
@@ -38,32 +37,32 @@ Scene {
     Sphere {
 	center 0 0 0 
         radius 1 
-        material_idx 0
+        material red
     }
     Sphere {
 	center 1 1 1 
         radius 0.75
-        material_idx 1
+        material green
     }
     Sphere {
 	center -1 -1 1 
         radius 0.75
-        material_idx 1
+        material green
     }
     Sphere {
 	center -1 1 -1 
         radius 0.75
-        material_idx 2
+        material blue
     }
     Sphere {
 	center 1 -1 -1 
         radius 0.75 
-        material_idx 2
+        material blue
     }
     Plane {
 	normal 0 1 0
         origin 0 -2 0
-        material_idx 3
+        material white
     }
 }
 
