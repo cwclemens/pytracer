@@ -18,6 +18,14 @@ class ConstantShader(Material):
   def shade(self, t, ray, normal, light):
     return self.color
     
+class NormalVisualizer(Material):
+  """Displays the components of the normal as colors"""
+
+  def __init__(self):
+    pass
+
+  def shade(self, t, ray, normal, light):
+    return abs(normal)
 
 class PhongDiffuse(Material):
   """Implements the diffuse component of the Phong model"""

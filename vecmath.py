@@ -11,6 +11,7 @@ def vector(*components):
 norm = np.linalg.norm
 dot = np.dot
 cross = np.cross
+abs = np.vectorize(math.fabs)
 
 # wrap index lookups in case arrays aren't used down the road
 getX = lambda self: self[0]
@@ -23,7 +24,8 @@ def normalized(vec):
 
 def quantize(x):
   """convert a float in [0,1] to an int in [0,255]"""
-  return math.floor(x*255)
+  y = math.floor(x*255)
+  return y if y<256 else 255
 quantize = np.vectorize(quantize)
 
 #####

@@ -1,0 +1,27 @@
+Settings {
+  background_color 0 0 0
+  ambient_light 0.1 0.1 0.1
+}
+Camera PerspectiveCamera {
+  location 0 0 10
+  forward 0 0 -1
+  up 0 1 0
+}
+Lights {
+  PointLight {
+    location 0 5 10
+  }
+}
+Materials {
+  PhongDiffuse red {
+    diffuse_color 1 0 0
+  }
+}
+Scene {
+  Triangle {
+    a 0 -5 0
+    b 5 5 0
+    c -5 5 0
+    material red
+  }
+}

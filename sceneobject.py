@@ -53,18 +53,26 @@ class Plane(SceneObject):
     if t > tmin:
       return (t, self.material, self.normal if dist > 0 else -self.normal)
 
-class Triangle(SceneObject): #TODO: implement triangle intersection with barycentrics
+class Triangle(SceneObject):
   """A triangle represented by its vertices, and optionally, its vertex normals"""
 
-  def __init__(self, a, b, c, material):
+  def __init__(self, a, b, c, material, na=None, nb=None, nc=None):
     self.a, self.b, self.c = a, b, c
-    self.na = self.nb = self.nc = normalized(cross(b-a, c-a))
+    if all((na != None, nb != None, nc != None)):
+      self.na, self.nb, self.nc = normalized(na), normalized(nb), normalized(nc)
+    else:
+      self.na = self.nb = self.nc = normalized(cross(b-a, c-a))
     self.material = material
 
-  def __init__(self, a, b, c, na, nb, nc, material):
-    self.a, self.b, self.c = a, b, c
-    self.na, self.nb, self.nc = normalized(na), normalized(nb), normalized(nc)
-    self.material = material
+  def intersect(self, ray, tmin):
+    try:
+      beta, gamma, t = np.linalg.solve(np.array([self.a-self.b, self.a-self.c, ray.direction]).T, (self.a-ray.origin)[np.newaxis].T)
+    except np.linalg.LinAlgError:
+      return None
+    alpha = 1 - beta - gamma
+    if t < tmin or alpha < 0 or beta < 0 or gamma < 0:
+      return None
+    return (t, self.material, alpha*self.na + beta*self.nb + gamma*self.nc)
 
 class Group(SceneObject):
   """Represent a collection of SceneObjects -- makes SceneObject into a tree"""
