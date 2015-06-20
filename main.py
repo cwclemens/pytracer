@@ -23,7 +23,7 @@ def main():
         array[j][i] = config.background_color
       else:
         t, material, normal = hit
-        array[j][i] = material.shade(t, ray, normal, config.lights[0])
+        array[j][i] = material.shade(t, ray, normal, config.lights[0], config.ambient_light)
   write_image(array, cmd_args.o)
 
 def getArguments():

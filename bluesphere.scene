@@ -14,7 +14,7 @@ Lights {
   }
 }
 Materials {
-  PhongDiffuse blue {
+  Phong blue {
     diffuse_color 0 0 1
   }
   PhongDiffuse white {
